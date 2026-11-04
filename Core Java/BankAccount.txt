@@ -1,0 +1,112 @@
+class BankAccount {
+    
+    static final int MAX_ATTEMPTS = 3;
+    static final int DAILY_LIMIT = 20000;
+    static final int MIN_BALANCE = 500;
+    static int accountNumber = 1001;
+    
+    
+    private final String holderName;
+    private String pin;
+    private int balance;
+    private int attempts;
+    private int withdrawAmount;
+    private boolean locked;
+    List<String> transactions = new ArrayList<>();
+    
+    void record(String successfullRecords) {
+        transactions.add(successfullRecords);
+    }
+    
+    BankAccount(String holderName, String pin, int openingDeposit) {
+        this.holderName = holderName;
+        this.pin = pin;
+        balance += openingDeposit;
+        accountNumber++;
+        record("OPEN " + openingDeposit);
+    }
+    
+    String getAccountNumber() {
+        return accountNumber;
+    }
+    
+    boolean deposit(int amount) {
+        if(amount <= 0) return false;
+        balance += amount;
+        record("DEPOSIT " + amount);
+        return true;
+    }
+    
+    boolean isLocked() {
+        return locked;
+    }
+    
+    boolean isPinValid(String pin) {
+        if(pin.length() != 4) return false;
+        return (this.pin.equals(pin));
+    }
+    
+    void startNewDay() {
+        withdrawAmount = 0;
+    }
+    
+    List<String> getMiniStatements() {
+        List<String> recent = new ArrayList<>();
+        int n = transactions.size();
+        int strt = Math.max(0, n-5);
+        for(int i = strt; i < n; i++) {
+            recent.add(transactions.get(i));
+        }
+        return recent;
+    }
+    
+    boolean withdraw(String pin, int amount) {
+        if(isLocked()) return false;
+        if(amount <= 0 || (amount % 100 != 0)) return false;
+        if(withdrawAmount + amount > DAILY_LIMIT) return false;
+        if(balance - amount < 500) return false;
+        if(isPinValid(pin)) {
+            balance -= amount;
+            attempts = 0;
+            record("WITHDRAW " + amount);
+            withdrawAmount += amount;
+            return true;
+        }else {
+            checkAttempts();
+        }
+        return false;
+    }
+    
+    void checkAttempts() {
+        attempts++;
+        if(attempts == 3) {
+            locked = true;
+        }
+    }
+    
+    int checkBalance(String pin) {
+        if(!isPinValid()) {
+            checkAttempts();
+            return -1;
+        }
+        if(isLocked()) return -1;
+        return balance;
+    }
+    
+    boolean changePin(String oldPin, String newPin) {
+        if(isLocked()) return false;
+        if(!isPinValid(oldPin)) return false;
+        if(newPin.length() != 4) return false;
+        if(newPin.equals(oldPin)) return false;
+        pin = newPin;
+        record("PIN CHNAGED");
+        return true;
+    }
+}
+
+class Main {
+    public static void main(String args[]) {
+        BankAccount b1 = new BankAccount("Aryan", "1234", 1000);
+      
+    }
+}
