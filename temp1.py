@@ -1,1 +1,1 @@
-print('Hello Veeva Systems')
+print('Hello Veeva')
